@@ -33,6 +33,24 @@ void bootiniUndo(QString uninstPathL)
 	SetFileAttributesW(LPWSTR(QDir::toNativeSeparators(QString("%1boot.ini").arg(uninstPathL)).utf16()), FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_ARCHIVE);
 }
 
+//add support for making a chrome os bootable usb
+void chromeosUndo(QString uninstPathL)
+{
+	QSettings vdtustor("HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\UNetbootin", QSettings::NativeFormat);
+	QVariant warch64varL(QVariant::Bool);
+	warch64varL = vdtustor.value("WArch64");
+	bool warch64L = warch64varL.value<bool>();
+	if (warch64L)
+	{
+		unetbootin::callexternapp(QDir::toNativeSeparators(QString("%1unetbtin/emtxfile.exe").arg(uninstPathL)), QDir::toNativeSeparators(QString("%1unetbtin/chromeosundo.bat runas").arg(uninstPathL)));
+	}
+	else
+	{
+		unetbootin::callexternapp(QDir::toNativeSeparators(QString("%1unetbtin/chromeosundo.bat").arg(uninstPathL)), "");
+	}
+	vdtustor.remove("WArch64");
+}
+
 void vistabcdUndo(QString uninstPathL)
 {
 	QSettings vdtustor("HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\UNetbootin", QSettings::NativeFormat);
