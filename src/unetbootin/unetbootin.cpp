@@ -2943,6 +2943,51 @@ QString unetbootin::getdevluid(QString voldrive)
 #endif
 }
 
+//add support for making chromeos bootable usb
+QString unetbootin::getuuid(QString voldrive)
+{
+#ifdef Q_OS_MAC
+	QString diskutilinfo = callexternapp("diskutil", "info " + voldrive);
+	return getuuid(voldrive, diskutilinfo);
+#endif
+#ifdef Q_OS_WIN32
+	voldrive.append("\\");
+	wchar_t volname[256];
+	wchar_t fsname[256];
+	DWORD serialnum;
+	DWORD maxcomp;
+	DWORD fsflags;
+	if (GetVolumeInformationW((wchar_t*)voldrive.utf16(), volname, 256, &serialnum, &maxcomp, &fsflags, fsname, 256))
+	{
+		return QString("%1").arg(serialnum, 8, 16, QChar('0'));
+	}
+	else
+	{
+		return "None";
+	}
+#endif
+#ifdef Q_OS_LINUX
+	QFile volfile(QString("/dev/%1").arg(voldrive));
+	if (volfile.open(QIODevice::ReadOnly))
+	{
+		unsigned char buf[512];
+		volfile.read((char*)buf, 512);
+		volfile.close();
+		unsigned int serialnum = 0;
+		for (int i = 0; i < 4; ++i)
+		{
+			serialnum += buf[0x1b8+i] << (i*8);
+		}
+		return QString("%1").arg(serialnum, 8, 16, QChar('0'));
+	}
+	else
+	{
+		return "None";
+	}
+#endif
+}
+
+
 #ifdef Q_OS_MAC
 QString unetbootin::getlabel(QString voldrive, QString diskutilinfo)
 {
